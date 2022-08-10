@@ -1,4 +1,4 @@
-import {Contract, ContractInterface, ethers} from "ethers";
+import {Contract, ContractInterface, ethers, Signer} from "ethers";
 import rentableJson from "./resources/rentable.json";
 import dotenv from 'dotenv';
 dotenv.config();
@@ -6,11 +6,17 @@ dotenv.config();
 class RentableContract{
     private contract: Contract
     constructor(provider: ethers.providers.Provider, contractAddress: string, contractAbi: ContractInterface) {
-        this.contract = new ethers.Contract(contractAddress, contractAbi, provider);
+        let contract = new ethers.Contract(contractAddress, contractAbi, provider);
+        let pk = process.env.PRIVATE_KEY
+        if(!pk) {
+            throw new Error("Cannot retrieve private key from env");
+        }
+        this.contract = contract.connect(new ethers.Wallet(pk, provider))
     }
 
     liquidateNFT = async() =>{
-        await this.contract.liquidateNFTLoop();
+        let res = await this.contract.liquidateNFTLoop();
+        console.log(res)
     }
 }
 
